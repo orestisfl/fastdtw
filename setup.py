@@ -45,6 +45,8 @@ extensions = [Extension(
         'fastdtw._fastdtw',
         [os.path.join('fastdtw', '_fastdtw' + ext)],
         language="c++",
+        extra_compile_args=["-O3", "-g0", "-march=native", "-mtune=native"],
+        extra_link_args=["-O3", "-g0", "-march=native", "-mtune=native"],
         include_dirs=numpy_includes,
         libraries=["stdc++"]
     )]
