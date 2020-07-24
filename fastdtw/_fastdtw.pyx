@@ -242,7 +242,7 @@ cdef double __dtw(x, y, vector[WindowElement] &window, dist,
 
     # initializing to avoid compiler warnings although if these variables are
     # used they will always be set below
-    cdef int use_1d = 0, use_2d = 0, width = 0
+    cdef int use_1d = 0, width = 0
 
     cdef double[:] x_arr1d, y_arr1d
     cdef double[:, :] x_arr2d, y_arr2d
@@ -264,19 +264,9 @@ cdef double __dtw(x, y, vector[WindowElement] &window, dist,
             use_1d = 1
             x_arr1d = x
             y_arr1d = y
-        elif x.ndim == 2:
-            if dist is None:
-                pnorm = 1
-            use_2d = 1
-            x_arr2d = x
-            y_arr2d = y
-            width = x.shape[1]
 
-    if not use_1d and not use_2d:
-        if dist is None:
-            dist = __difference
-        elif pnorm > 0:
-            dist = __norm(pnorm)
+    if not use_1d:
+        raise ValueError('disabled')
 
     # loop over the window. Note from __expand_window that if we loop over its
     # indices we will in effect be looping over each row
@@ -291,16 +281,7 @@ cdef double __dtw(x, y, vector[WindowElement] &window, dist,
     for idx in range(window_len):
 
         we = window[idx]
-        if use_1d:
-            dt = abs(x_arr1d[we.x_idx] - y_arr1d[we.y_idx])
-        elif use_2d:
-            sm = 0
-            for i in range(width):
-                diff = abs(x_arr2d[we.x_idx, i] - y_arr2d[we.y_idx, i])
-                sm += pow(diff, pnorm)
-            dt = pow(sm, 1 / pnorm)
-        else:
-            dt = dist(x[we.x_idx], y[we.y_idx])
+        dt = (int(x_arr1d[we.x_idx]) != int(y_arr1d[we.y_idx])) * 5
 
         d_left = cost[we.cost_idx_left].cost \
             if we.cost_idx_left != -1 else INFINITY
